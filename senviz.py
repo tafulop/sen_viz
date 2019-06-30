@@ -41,7 +41,7 @@ def display(sensors, vehicle, sensor_alpha=0.25, vehicle_alpha=1.0):
     collection = PatchCollection(s_patches, alpha=sensor_alpha, match_original=True)
     ax.add_collection(collection)
     # add vehicle
-    ax.add_collection(PatchCollection([mpatches.Rectangle((-vehicle.width/2.0, -vehicle.length), vehicle.width, vehicle.length, color="grey")], alpha=vehicle_alpha, match_original=True))
+    ax.add_collection(PatchCollection([mpatches.Rectangle((-vehicle.width/2.0, -vehicle.length), vehicle.width, vehicle.length, color=vehicle.color)], alpha=vehicle_alpha, match_original=True))
     # displaying content
     plt.legend(loc=0, handles=s_patches)
     plt.xlabel('distance [m]')
