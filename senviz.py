@@ -6,50 +6,56 @@ import matplotlib.patches as mpatches
 from matplotlib.collections import PatchCollection
 import numpy
 
-fig, ax = plt.subplots()
+class Sensor:
+    def __init__(self, x, y, range, fov, orientation, blindzone=0, color="blue"):
+        self.pos_x = x
+        self.pos_y = y
+        self.range = range
+        self.fov = fov
+        self.orient = orientation
+        self.blindzone = blindzone
+        self.color = color
 
-# create sensors
-patches = []
+class SensorContainer:
+    sensors = {}
+    def add(self, name, sensor):
+        self.sensors[name] = sensor
 
-def add_sensor(x_pos, y_pos, view_distance, fov, start_degree="inf", blindzone=0.0, color="blue", z_order=0.0):
-    if start_degree == "inf":
-        start_degree = 90-fov/2
-    patches.append(mpatches.Wedge((x_pos, y_pos), view_distance, start_degree, fov + start_degree, color=color, ec="none", width=view_distance - blindzone, zorder=z_order))
+class Vehicle:
+    def __init__(self, width, length, color="grey"):
+        self.width = width
+        self.length = length
+        self.color = color
 
-# CAMERAS
+def display(sensors, vehicle, sensor_alpha=0.25, vehicle_alpha=1.0):
+    fig, ax = plt.subplots()
+    # add sensors
+    s_patches = []
+    for key in sensors:
+        s = sensors[key]
+        theta_1 = s.orient - (s.fov/2)
+        theta_2 = s.orient + (s.fov/2)
+        s_patches.append(mpatches.Wedge((s.pos_x, s.pos_y), s.range, theta_1, theta_2, color=s.color, ec="none", width=s.range - s.blindzone))
+    collection = PatchCollection(s_patches, alpha=sensor_alpha, match_original=True)
+    ax.add_collection(collection)
+    # add vehicle
+    ax.add_collection(PatchCollection([mpatches.Rectangle((-vehicle.width/2, -vehicle.length), vehicle.width, vehicle.length, color="grey")], match_original=True))
+    plt.xlabel('distance [m]')
+    plt.ylabel('distance [m]')
+    plt.axis('equal')
+    plt.tight_layout()
+    #plt.grid()
+    plt.show()
 
-# left 
-add_sensor(0.32, 0, 80, 60, 0, blindzone=5.0, color="blue")
-# left central
-add_sensor(0.32, 0, 80, 60, 40, blindzone=5.0, color="blue")
-# right central
-add_sensor(-0.32, 0, 80, 60, 80, blindzone=5.0, color="blue")
-# right
-add_sensor(-0.32, 0, 80, 60, 120, blindzone=5.0, color="blue")
-# central
-add_sensor(-0.32, 0, 120, 30, blindzone=8.0, color="yellow", z_order=-1)
+# add a few sensors
+sensors = SensorContainer()
+sensors.add("camera_1", Sensor(0,0,40,60,30,5,"blue"))
+sensors.add("camera_2", Sensor(0,0,40,60,60,5,"blue"))
+sensors.add("camera_3", Sensor(0,0,80,30,90,10,"blue"))
+sensors.add("camera_4", Sensor(0,0,40,60,120,5,"blue"))
+sensors.add("camera_5", Sensor(0,0,40,60,150,5,"blue"))
+sensors.add("lidar_360", Sensor(0,0,35,360,90,5,"red"))
 
-# LIDARS
-# 360 LIDAR
-add_sensor(0, 0, 45, 360, blindzone=6.5, color="red", z_order=-1)
+vehicle = Vehicle(5, 20)
 
-# close range lidar
-add_sensor(0, 0, 8.0, 360, color="orange")
-
-# plot all items
-collection = PatchCollection(patches, alpha=0.25, match_original=True)
-ax.add_collection(collection)
-
-# add vehicle model at the end
-v_x = 5
-v_y = 25
-collection = PatchCollection([mpatches.Rectangle((-v_x/2, -v_y), v_x, v_y, color="grey")], match_original=True)
-ax.add_collection(collection)
-
-plt.xlabel('distance [m]')
-plt.ylabel('distance [m]')
-plt.axis('equal')
-plt.tight_layout()
-#plt.grid()
-
-plt.show()
+display(sensors.sensors, vehicle)
