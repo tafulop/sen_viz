@@ -35,11 +35,15 @@ def display(sensors, vehicle, sensor_alpha=0.25, vehicle_alpha=1.0):
         s = sensors[key]
         theta_1 = s.orient - (s.fov/2)
         theta_2 = s.orient + (s.fov/2)
-        s_patches.append(mpatches.Wedge((s.pos_x, s.pos_y), s.range, theta_1, theta_2, color=s.color, ec="none", width=s.range - s.blindzone))
+        wedge = mpatches.Wedge((s.pos_x, s.pos_y), s.range, theta_1, theta_2, color=s.color, ec="none", width=s.range - s.blindzone, label=key)
+        s_patches.append(wedge)
+
     collection = PatchCollection(s_patches, alpha=sensor_alpha, match_original=True)
     ax.add_collection(collection)
     # add vehicle
-    ax.add_collection(PatchCollection([mpatches.Rectangle((-vehicle.width/2, -vehicle.length), vehicle.width, vehicle.length, color="grey")], match_original=True))
+    ax.add_collection(PatchCollection([mpatches.Rectangle((-vehicle.width/2.0, -vehicle.length), vehicle.width, vehicle.length, color="grey")], alpha=vehicle_alpha, match_original=True))
+    # displaying content
+    plt.legend(loc=0, handles=s_patches)
     plt.xlabel('distance [m]')
     plt.ylabel('distance [m]')
     plt.axis('equal')
@@ -49,13 +53,14 @@ def display(sensors, vehicle, sensor_alpha=0.25, vehicle_alpha=1.0):
 
 # add a few sensors
 sensors = SensorContainer()
-sensors.add("camera_1", Sensor(0,0,40,60,30,5,"blue"))
-sensors.add("camera_2", Sensor(0,0,40,60,60,5,"blue"))
+sensors.add("camera_1", Sensor(0,0,40,60,30,6,"yellow"))
+sensors.add("camera_2", Sensor(0,0,40,60,60,6,"green"))
 sensors.add("camera_3", Sensor(0,0,80,30,90,10,"blue"))
-sensors.add("camera_4", Sensor(0,0,40,60,120,5,"blue"))
-sensors.add("camera_5", Sensor(0,0,40,60,150,5,"blue"))
-sensors.add("lidar_360", Sensor(0,0,35,360,90,5,"red"))
+sensors.add("camera_4", Sensor(0,0,40,60,120,6,"black"))
+sensors.add("camera_5", Sensor(0,0,40,60,150,6,"orange"))
+sensors.add("lidar_360", Sensor(0,0,35,360,90,7.5,"red"))
 
-vehicle = Vehicle(5, 20)
+# add a vehicle
+vehicle = Vehicle(5.0, 20.0)
 
 display(sensors.sensors, vehicle)
